@@ -1,6 +1,7 @@
 import cv2
 import torch
 import numpy as np
+import matplotlib
 from skimage.metrics import structural_similarity as ssim
 import sys
 import os
@@ -12,6 +13,29 @@ from depth_anything_v2.dpt import DepthAnythingV2
 TEST_SUCCESS = 0
 TEST_EXPECTED_FAIL = 1
 TEST_CRITICAL_ERROR = 2
+
+def save_heatmap(raw_image, depth_matrix, filename):
+    """
+    Генерация визуализации как в оригинальном run.py
+    """
+    # 1. Нормализация глубины
+    depth_normalized = (depth_matrix - depth_matrix.min()) / (depth_matrix.max() - depth_matrix.min()) * 255.0
+    depth_normalized = depth_normalized.astype(np.uint8)
+    
+    # 2. Получение colormap 'Spectral_r'
+    cmap = matplotlib.colormaps.get_cmap('Spectral_r')
+    depth_color = (cmap(depth_normalized)[:, :, :3] * 255)[:, :, ::-1].astype(np.uint8)
+    
+    # 3. Создание белой разделительной полосы
+    split_region = np.ones((raw_image.shape[0], 50, 3), dtype=np.uint8) * 255
+    
+    # 4. Склейка: оригинал + полоса + карта
+    combined_result = cv2.hconcat([raw_image, split_region, depth_color])
+    
+    save_path = f'output/{filename}'
+    cv2.imwrite(save_path, combined_result)
+    print(f"  [VIS] Тепловая карта (Spectral_r) сохранена: {save_path}")
+
 
 def compare_depth_matrices(ref_matrix, test_matrix, test_name):
     """Функция вычитания матриц, расчета метрик и сохранения визуализации"""
@@ -87,6 +111,8 @@ def main():
     raw_img1 = cv2.imread(img1_path)
     user_depth_1 = model.infer_image(raw_img1)
     
+    save_heatmap(raw_img1, user_depth_1, 'heatmap_1_test_image.png')
+
     status_1 = compare_depth_matrices(ref_depth, user_depth_1, "Test_1_True")
 
     # ТЕСТ 2: Негативный 
@@ -94,6 +120,8 @@ def main():
     raw_img2 = cv2.imread(img2_path)
     user_depth_2 = model.infer_image(raw_img2) # raw_img2_resized
     
+    save_heatmap(raw_img2, user_depth_2, 'heatmap_2_test_image.png')
+
     status_2 = compare_depth_matrices(ref_depth, user_depth_2, "Test_2_False")
 
     # ИТОГ
