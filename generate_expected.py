@@ -11,8 +11,8 @@ MODEL_CONFIG = {
 }
 
 CHECKPOINT_PATH = 'checkpoints/depth_anything_v2_vits.pth'
-TEST_IMAGE_PATH = 'tests/test_image.jpg'
-OUTPUT_PATH = 'tests/expected_depth.npy'
+TEST_IMAGE_PATH = 'tests/test_image_1.jpg'
+OUTPUT_PATH = 'expected_depth.npy'
 
 # Отладочная информация
 abs_test_path = os.path.abspath(TEST_IMAGE_PATH)

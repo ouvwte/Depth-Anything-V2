@@ -1,7 +1,7 @@
 import cv2
 import torch
 import numpy as np
-import matplotlib #.use('Agg')
+import matplotlib
 matplotlib.use('Agg')
 from skimage.metrics import structural_similarity as ssim
 import sys
@@ -50,7 +50,7 @@ def compare_depth_matrices(ref_matrix, test_matrix, test_name):
         test_matrix = cv2.resize(test_matrix, (ref_matrix.shape[1], ref_matrix.shape[0]))
 
     # Вычитание матриц (абсолютная разность)
-    diff_matrix = np.abs(ref_matrix.astype(np.float64) - test_matrix.astype(np.float64)) # ref_matrix - test_matrix
+    diff_matrix = np.abs(ref_matrix.astype(np.float64) - test_matrix.astype(np.float64))
     
     # Нормализация для SSIM
     ref_norm = np.zeros_like(ref_matrix)
@@ -67,14 +67,11 @@ def compare_depth_matrices(ref_matrix, test_matrix, test_name):
 
     # Создание карты разности
     os.makedirs('output', exist_ok=True)
-    # diff_visual = np.zeros_like(diff_matrix, dtype=np.uint8)
-    # cv2.normalize(diff_matrix, diff_visual, 0, 255, cv2.NORM_MINMAX)
-    # diff_colored = cv2.applyColorMap(diff_visual, cv2.COLORMAP_JET)
     diff_vis = cv2.normalize(diff_matrix, None, 0, 255, cv2.NORM_MINMAX, dtype=cv2.CV_8U)
 
     safe_filename = test_name.replace(" ", "_").replace(":", "").replace(",", "")
     save_path = f'output/diff_{safe_filename}.png'
-    cv2.imwrite(save_path, diff_vis) # diff_colored
+    cv2.imwrite(save_path, diff_vis)
     print(f"  [VIS] Карта отклонений сохранена: {save_path}")
 
     # Оценка результата
@@ -111,23 +108,18 @@ def main():
     img1_path = 'tests/test_image_1.jpg'
     raw_img1 = cv2.imread(img1_path)
     user_depth_1 = model.infer_image(raw_img1)
-    
     save_heatmap(raw_img1, user_depth_1, 'heatmap_1_test_image.png')
-
     status_1 = compare_depth_matrices(ref_depth, user_depth_1, "Test_1_True")
 
     # ТЕСТ 2: Негативный 
     img2_path = 'tests/test_image_2.jpg'
     raw_img2 = cv2.imread(img2_path)
     user_depth_2 = model.infer_image(raw_img2) # raw_img2_resized
-    
     save_heatmap(raw_img2, user_depth_2, 'heatmap_2_test_image.png')
-
     status_2 = compare_depth_matrices(ref_depth, user_depth_2, "Test_2_False")
 
     # ИТОГ
     print("\n" + "="*50)
-    
     if TEST_CRITICAL_ERROR in [status_1, status_2]:
         print("❌ ИТОГО: КРИТИЧЕСКАЯ ОШИБКА В ЛОГИКЕ ТЕСТОВ!")
         print("Сборка контейнера некорректна.")
