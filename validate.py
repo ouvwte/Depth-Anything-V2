@@ -1,7 +1,8 @@
 import cv2
 import torch
 import numpy as np
-import matplotlib
+import matplotlib #.use('Agg')
+matplotlib.use('Agg')
 from skimage.metrics import structural_similarity as ssim
 import sys
 import os
@@ -34,7 +35,7 @@ def save_heatmap(raw_image, depth_matrix, filename):
     
     save_path = f'output/{filename}'
     cv2.imwrite(save_path, combined_result)
-    print(f"  [VIS] Тепловая карта (Spectral_r) сохранена: {save_path}")
+    print(f"\n  [VIS] Тепловая карта (Spectral_r) сохранена: {save_path}")
 
 
 def compare_depth_matrices(ref_matrix, test_matrix, test_name):
